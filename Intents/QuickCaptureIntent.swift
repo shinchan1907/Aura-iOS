@@ -7,7 +7,9 @@ public struct QuickCaptureIntent: AppIntent {
     @Parameter(title: "Task Title")
     public var title: String
     
-    public init() {}
+    public init(title: String = "") {
+        self.title = title
+    }
     
     public func perform() async throws -> some IntentResult {
         // In a real implementation, this would instantiate the SwiftData context
