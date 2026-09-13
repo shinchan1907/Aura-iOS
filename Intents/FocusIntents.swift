@@ -8,8 +8,13 @@ public struct PauseFocusIntent: LiveActivityIntent {
     public init() {}
     
     public func perform() async throws -> some IntentResult {
-        // In a real app, locate the active FocusSession via SwiftData and mutate state.
-        // Update ActivityKit Activity.
+        Task { @MainActor in
+            for activity in Activity<FocusAttributes>.activities {
+                var contentState = activity.content.state
+                contentState.sessionState = .paused
+                await activity.update(using: contentState)
+            }
+        }
         return .result()
     }
 }
@@ -20,8 +25,13 @@ public struct ResumeFocusIntent: LiveActivityIntent {
     public init() {}
     
     public func perform() async throws -> some IntentResult {
-        // In a real app, locate the paused FocusSession via SwiftData and mutate state.
-        // Update ActivityKit Activity.
+        Task { @MainActor in
+            for activity in Activity<FocusAttributes>.activities {
+                var contentState = activity.content.state
+                contentState.sessionState = .active
+                await activity.update(using: contentState)
+            }
+        }
         return .result()
     }
 }
@@ -32,7 +42,27 @@ public struct CompleteFocusIntent: LiveActivityIntent {
     public init() {}
     
     public func perform() async throws -> some IntentResult {
-        // End the FocusSession, log TaskHistory, and end the ActivityKit Live Activity.
+        Task { @MainActor in
+            let context = AuraSchema.modelContainer.mainContext
+            let descriptor = FetchDescriptor<FocusSession>()
+            if let sessions = try? context.fetch(descriptor) {
+                for session in sessions where session.isActive {
+                    session.endSession()
+                    if let task = session.task {
+                        let event = TaskHistory(eventType: .completed, details: "Completed via Live Activity", task: task)
+                        context.insert(event)
+                        task.status = .completed
+                    }
+                }
+                try? context.save()
+            }
+            
+            for activity in Activity<FocusAttributes>.activities {
+                var contentState = activity.content.state
+                contentState.sessionState = .completed
+                await activity.end(ActivityContent(state: contentState, staleDate: nil), dismissalPolicy: .immediate)
+            }
+        }
         return .result()
     }
 }
