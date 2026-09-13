@@ -7,7 +7,10 @@ public struct QuickCaptureIntent: AppIntent {
     @Parameter(title: "Task Title")
     public var taskTitle: String
     
-    public init(taskTitle: String = "") {
+    public init() {
+    }
+    
+    public init(taskTitle: String) {
         self.taskTitle = taskTitle
     }
     
