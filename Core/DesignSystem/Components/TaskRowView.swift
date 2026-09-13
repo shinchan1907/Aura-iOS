@@ -29,7 +29,7 @@ public struct TaskRowView: View {
                     if let project = task.project {
                         HStack(spacing: 4) {
                             Circle()
-                                .fill(Color(hex: project.colorHex))
+                                .fill(Color(hex: project.colorHex) ?? AuraColors.accent)
                                 .frame(width: 8, height: 8)
                             Text(project.title)
                                 .font(AuraTypography.caption)

@@ -5,10 +5,10 @@ public struct QuickCaptureIntent: AppIntent {
     public static var title: LocalizedStringResource = "Quick Capture Task"
     
     @Parameter(title: "Task Title")
-    public var title: String
+    public var taskTitle: String
     
-    public init(title: String = "") {
-        self.title = title
+    public init(taskTitle: String = "") {
+        self.taskTitle = taskTitle
     }
     
     public func perform() async throws -> some IntentResult {

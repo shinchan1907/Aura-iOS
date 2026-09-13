@@ -74,7 +74,7 @@ struct QuickCaptureWidget: Widget {
             VStack {
                 Text("Capture Idea")
                     .font(.headline)
-                Button(intent: QuickCaptureIntent(title: "")) {
+                Button(intent: QuickCaptureIntent(taskTitle: "")) {
                     Image(systemName: "plus.circle.fill")
                         .font(.largeTitle)
                         .foregroundColor(.indigo)
