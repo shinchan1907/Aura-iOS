@@ -1,7 +1,7 @@
 import SwiftUI
 
 public struct AuraPrimaryButtonStyle: ButtonStyle {
-    public func body(configuration: Configuration) -> some View {
+    public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AuraTypography.headline)
             .foregroundColor(.white)
@@ -19,7 +19,7 @@ public struct AuraPrimaryButtonStyle: ButtonStyle {
 }
 
 public struct AuraSecondaryButtonStyle: ButtonStyle {
-    public func body(configuration: Configuration) -> some View {
+    public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(AuraTypography.headline)
             .foregroundColor(AuraColors.accent)

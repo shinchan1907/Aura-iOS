@@ -3,12 +3,12 @@ import SwiftData
 
 public struct TodayView: View {
     @Query(filter: #Predicate<TaskItem> { task in
-        task.statusRaw != TaskItem.Status.completed.rawValue
+        task.statusRaw != 2 // 2 is completed
     }, sort: \TaskItem.dueDate) 
     private var allIncompleteTasks: [TaskItem]
     
     @Query(filter: #Predicate<TaskItem> { task in
-        task.statusRaw == TaskItem.Status.completed.rawValue
+        task.statusRaw == 2
     }) 
     private var allCompletedTasks: [TaskItem]
     

@@ -3,7 +3,7 @@ import SwiftData
 
 public struct InboxView: View {
     @Query(filter: #Predicate<TaskItem> { task in
-        task.project == nil && task.statusRaw != TaskItem.Status.completed.rawValue
+        task.project == nil && task.statusRaw != 2 // 2 is TaskItem.Status.completed
     }, sort: \TaskItem.createdAt, order: .reverse) 
     private var inboxTasks: [TaskItem]
     
