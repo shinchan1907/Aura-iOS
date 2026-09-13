@@ -120,7 +120,7 @@ struct ProjectCardView: View {
                     
                     Capsule()
                         .fill(Color(hex: project.colorHex) ?? AuraColors.accent)
-                        .frame(width: geo.size.width * CGFloat(project.progress), height: 6)
+                        .frame(width: geo.size.width * CGFloat(project.derivedProgress), height: 6)
                 }
             }
             .frame(height: 6)
