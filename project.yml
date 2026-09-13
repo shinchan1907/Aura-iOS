@@ -13,6 +13,7 @@ targets:
       - Features
       - Intents
     info:
+      path: App/Info.plist
       properties:
         UILaunchScreen: {}
         NSSupportsLiveActivities: true
@@ -35,6 +36,7 @@ targets:
       - LiveActivities
       - Intents
     info:
+      path: Widgets/Info.plist
       properties:
         NSExtension:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
