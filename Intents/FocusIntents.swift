@@ -1,5 +1,6 @@
 import AppIntents
 import SwiftData
+import ActivityKit
 
 public struct PauseFocusIntent: LiveActivityIntent {
     public static var title: LocalizedStringResource = "Pause Focus"
