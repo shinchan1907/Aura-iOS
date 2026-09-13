@@ -8,10 +8,10 @@ targets:
     type: application
     platform: iOS
     sources: 
-      - path: App
-      - path: Core
-      - path: Features
-      - path: Intents
+      - App
+      - Core
+      - Features
+      - Intents
     info:
       properties:
         UILaunchScreen: {}
@@ -31,9 +31,9 @@ targets:
     type: app-extension
     platform: iOS
     sources: 
-      - path: Widgets
-      - path: LiveActivities
-      - path: Intents
+      - Widgets
+      - LiveActivities
+      - Intents
     info:
       properties:
         NSExtension:
