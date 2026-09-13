@@ -64,9 +64,8 @@ public struct TodayView: View {
                 }
             }
             .sheet(isPresented: $showingCreateTask) {
-                // In a real app, this would be a full task creation sheet
-                Text("Quick Capture Sheet")
-                    .presentationDetents([.medium])
+                QuickCaptureSheet(isPresented: $showingCreateTask)
+                    .presentationDetents([.height(300)])
             }
         }
     }
@@ -205,3 +204,108 @@ public struct TodayView: View {
         }
     }
 }
+
+struct QuickCaptureSheet: View {
+    @Environment(\.modelContext) private var modelContext
+    @Binding var isPresented: Bool
+    @State private var newTaskTitle: String = ""
+    @State private var extractedDate: Date? = nil
+    @FocusState private var isFocused: Bool
+    
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: AuraLayout.spacingLarge) {
+                TextField("What needs to be done?", text: $newTaskTitle)
+                    .font(AuraTypography.title2)
+                    .focused($isFocused)
+                    .onChange(of: newTaskTitle) { _, newValue in
+                        parseNaturalLanguage(input: newValue)
+                    }
+                    .onSubmit {
+                        addTask()
+                    }
+                    .submitLabel(.done)
+                
+                if let extractedDate = extractedDate {
+                    HStack {
+                        Image(systemName: "calendar")
+                            .font(AuraTypography.caption)
+                        Text(extractedDate.formatted(date: .abbreviated, time: .shortened))
+                            .font(AuraTypography.caption)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(AuraColors.accent.opacity(0.15))
+                    .foregroundColor(AuraColors.accent)
+                    .clipShape(Capsule())
+                    .transition(.opacity.combined(with: .scale(scale: 0.9)))
+                }
+                
+                Spacer()
+                
+                Button(action: addTask) {
+                    Text("Save Task")
+                        .font(AuraTypography.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(newTaskTitle.isEmpty ? Color.gray : AuraColors.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: AuraLayout.cornerRadiusMedium))
+                }
+                .disabled(newTaskTitle.isEmpty)
+            }
+            .padding()
+            .navigationTitle("New Task")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        isPresented = false
+                    }
+                }
+            }
+            .onAppear {
+                isFocused = true
+            }
+        }
+    }
+    
+    private func parseNaturalLanguage(input: String) {
+        guard !input.isEmpty else {
+            withAnimation { self.extractedDate = nil }
+            return
+        }
+        
+        let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.date.rawValue)
+        let matches = detector?.matches(in: input, options: [], range: NSRange(location: 0, length: input.utf16.count))
+        
+        if let match = matches?.first, let date = match.date {
+            if self.extractedDate != date {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    self.extractedDate = date
+                }
+            }
+        } else {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                self.extractedDate = nil
+            }
+        }
+    }
+    
+    private func addTask() {
+        let trimmed = newTaskTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        
+        withAnimation {
+            let newTask = TaskItem(title: trimmed, dueDate: extractedDate)
+            modelContext.insert(newTask)
+            
+            let event = TaskHistory(eventType: .created, details: "Captured in Quick Capture Sheet", task: newTask)
+            modelContext.insert(event)
+            
+            AuraHaptics.success()
+            isPresented = false
+        }
+    }
+}
+

@@ -8,15 +8,8 @@ public struct AnalyticsDashboardView: View {
     
     // In a real app, these would be populated from AnalyticsService.
     // We'll mock the chart data to show the intended design.
-    private let chartData: [DailyProgress] = [
-        DailyProgress(day: "Mon", completed: 3, created: 5),
-        DailyProgress(day: "Tue", completed: 5, created: 4),
-        DailyProgress(day: "Wed", completed: 2, created: 2),
-        DailyProgress(day: "Thu", completed: 8, created: 7),
-        DailyProgress(day: "Fri", completed: 6, created: 6),
-        DailyProgress(day: "Sat", completed: 1, created: 0),
-        DailyProgress(day: "Sun", completed: 4, created: 3)
-    ]
+    @State private var chartData: [DailyProgress] = []
+    @State private var analytics: AnalyticsService.AnalyticsData = AnalyticsService.AnalyticsData(tasksCompleted: 0, tasksCreated: 0, overdueTasks: 0, totalFocusTime: 0, completionRate: 0)
     
     enum TimeRange: String, CaseIterable, Identifiable {
         case today = "Today"
@@ -42,11 +35,15 @@ public struct AnalyticsDashboardView: View {
                         }
                         .pickerStyle(.segmented)
                         .padding(.bottom, AuraLayout.spacingMedium)
+                        .onChange(of: timeRange) { _, _ in
+                            loadAnalytics()
+                        }
                         
                         // Summary Cards
                         HStack(spacing: AuraLayout.spacingMedium) {
-                            statCard(title: "Completed", value: "29", icon: "checkmark.circle.fill", color: AuraColors.success)
-                            statCard(title: "Focus Time", value: "14h", icon: "bolt.fill", color: AuraColors.projectPurple)
+                            statCard(title: "Completed", value: "\(analytics.tasksCompleted)", icon: "checkmark.circle.fill", color: AuraColors.success)
+                            let hours = Int(analytics.totalFocusTime) / 3600
+                            statCard(title: "Focus Time", value: "\(hours)h", icon: "bolt.fill", color: AuraColors.projectPurple)
                         }
                         
                         // Main Chart
@@ -91,15 +88,19 @@ public struct AnalyticsDashboardView: View {
                             HStack {
                                 Image(systemName: "brain.head.profile")
                                     .foregroundColor(AuraColors.projectPurple)
-                                Text("Behavioral Insights")
+                                    Text("Behavioral Insights")
                                     .font(AuraTypography.title2)
                                     .foregroundColor(AuraColors.textPrimary)
                             }
                             
                             VStack(spacing: AuraLayout.spacingSmall) {
-                                insightRow(icon: "calendar.badge.clock", text: "You are most productive on Thursdays.", type: .positive)
-                                insightRow(icon: "arrow.uturn.right", text: "Tasks are rescheduled 1.5 times on average.", type: .neutral)
-                                insightRow(icon: "clock.badge.exclamationmark", text: "Estimates are consistently 20% too optimistic.", type: .warning)
+                                if analytics.completionRate > 0.8 {
+                                    insightRow(icon: "star.fill", text: "Incredible completion rate!", type: .positive)
+                                } else if analytics.completionRate < 0.3 {
+                                    insightRow(icon: "arrow.uturn.right", text: "Try breaking down your tasks.", type: .warning)
+                                } else {
+                                    insightRow(icon: "chart.line.uptrend.xyaxis", text: "You're on track.", type: .neutral)
+                                }
                             }
                         }
                         .auraCard()
@@ -110,7 +111,18 @@ public struct AnalyticsDashboardView: View {
             }
             .navigationTitle("Analytics")
             .navigationBarTitleDisplayMode(.large)
+            .onAppear(perform: loadAnalytics)
         }
+    }
+    
+    private func loadAnalytics() {
+        let daysOffset = timeRange == .sevenDays ? -7 : (timeRange == .thirtyDays ? -30 : -1)
+        if timeRange == .sevenDays {
+            analytics = AnalyticsService.shared.getLast7DaysAnalytics(modelContext: modelContext)
+        } else {
+            analytics = AnalyticsService.shared.getLast30DaysAnalytics(modelContext: modelContext)
+        }
+        chartData = AnalyticsService.shared.getDailyProgress(for: daysOffset, modelContext: modelContext)
     }
     
     private func insightRow(icon: String, text: String, type: InsightType) -> some View {
@@ -157,11 +169,4 @@ public struct AnalyticsDashboardView: View {
         }
         .auraCard()
     }
-}
-
-struct DailyProgress: Identifiable {
-    let id = UUID()
-    let day: String
-    let completed: Int
-    let created: Int
 }

@@ -62,4 +62,65 @@ public final class AnalyticsService {
             completionRate: min(completionRate, 1.0)
         )
     }
+    
+    public func getDailyProgress(for daysOffset: Int, modelContext: ModelContext) -> [DailyProgress] {
+        let calendar = Calendar.current
+        guard let startDate = calendar.date(byAdding: .day, value: daysOffset, to: Date()) else {
+            return []
+        }
+        
+        let descriptor = FetchDescriptor<TaskHistory>(
+            predicate: #Predicate<TaskHistory> { event in
+                event.timestamp >= startDate
+            }
+        )
+        let events = (try? modelContext.fetch(descriptor)) ?? []
+        
+        var dailyStats: [String: (completed: Int, created: Int)] = [:]
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE" // e.g. "Mon", "Tue"
+        
+        for i in 0..<abs(daysOffset) {
+            if let date = calendar.date(byAdding: .day, value: i, to: startDate) {
+                dailyStats[formatter.string(from: date)] = (0, 0)
+            }
+        }
+        
+        for event in events {
+            let day = formatter.string(from: event.timestamp)
+            var stats = dailyStats[day] ?? (0, 0)
+            if event.eventType == .completed {
+                stats.completed += 1
+            } else if event.eventType == .created {
+                stats.created += 1
+            }
+            dailyStats[day] = stats
+        }
+        
+        // Return sorted by date
+        var result: [DailyProgress] = []
+        for i in 0..<abs(daysOffset) {
+            if let date = calendar.date(byAdding: .day, value: i, to: startDate) {
+                let dayStr = formatter.string(from: date)
+                if let stats = dailyStats[dayStr] {
+                    result.append(DailyProgress(day: dayStr, completed: stats.completed, created: stats.created))
+                }
+            }
+        }
+        return result
+    }
+}
+
+public struct DailyProgress: Identifiable {
+    public let id = UUID()
+    public let day: String
+    public let completed: Int
+    public let created: Int
+    
+    public init(day: String, completed: Int, created: Int) {
+        self.day = day
+        self.completed = completed
+        self.created = created
+    }
 }

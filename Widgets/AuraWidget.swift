@@ -3,24 +3,44 @@ import SwiftUI
 import SwiftData
 
 struct Provider: TimelineProvider {
-    // In a real app, this would query SwiftData to get actual task counts.
-    // For this boilerplate, we use placeholder data.
+    @MainActor
+    private func fetchTodayProgress() -> (count: Int, progress: Double) {
+        do {
+            let context = AuraSchema.modelContainer.mainContext
+            let descriptor = FetchDescriptor<TaskItem>()
+            let allTasks = try context.fetch(descriptor)
+            let completed = allTasks.filter { $0.statusRaw == 2 }
+            let incomplete = allTasks.filter { $0.statusRaw != 2 }
+            
+            let total = allTasks.count
+            let progress = total > 0 ? Double(completed.count) / Double(total) : 0.0
+            return (incomplete.count, progress)
+        } catch {
+            return (0, 0.0)
+        }
+    }
+
     func placeholder(in context: Context) -> SimpleEntry {
         SimpleEntry(date: Date(), tasksCount: 3, progress: 0.6)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (SimpleEntry) -> ()) {
-        let entry = SimpleEntry(date: Date(), tasksCount: 3, progress: 0.6)
-        completion(entry)
+        Task { @MainActor in
+            let stats = fetchTodayProgress()
+            let entry = SimpleEntry(date: Date(), tasksCount: stats.count, progress: stats.progress)
+            completion(entry)
+        }
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> ()) {
-        var entries: [SimpleEntry] = []
-        let entry = SimpleEntry(date: Date(), tasksCount: 3, progress: 0.6)
-        entries.append(entry)
-
-        let timeline = Timeline(entries: entries, policy: .atEnd)
-        completion(timeline)
+        Task { @MainActor in
+            let stats = fetchTodayProgress()
+            let entry = SimpleEntry(date: Date(), tasksCount: stats.count, progress: stats.progress)
+            // Update widget every 15 minutes
+            let nextUpdate = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+            let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
+            completion(timeline)
+        }
     }
 }
 
