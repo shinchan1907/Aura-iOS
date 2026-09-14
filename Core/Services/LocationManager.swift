@@ -102,7 +102,7 @@ public final class LocationManager: NSObject, CLLocationManagerDelegate {
         return record
     }
     
-    public func punchOut(context: ModelContext, record: AttendanceRecord, notes: String = "", isAuto: Bool = false) {
+    public func punchOut(context: ModelContext, record: AttendanceRecord, office: OfficeLocation? = nil, notes: String = "", isAuto: Bool = false) {
         let now = Date()
         record.punchOutTime = now
         if !notes.isEmpty {

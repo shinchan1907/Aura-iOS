@@ -223,7 +223,7 @@ public struct TaskDetailView: View {
                     .foregroundColor(AuraColors.textPrimary)
                 Spacer()
                 
-                if let followUp = task.followUpDate {
+                if task.followUpDate != nil {
                     Button("Clear") {
                         task.followUpDate = nil
                         task.isAlarmActive = false
