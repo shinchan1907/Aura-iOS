@@ -77,29 +77,27 @@ public struct ProAnalyticsHubView: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Image(systemName: "crown.fill")
-                        .foregroundColor(AuraColors.urgent)
-                    Text("Aura Pro Subscriber")
+                    Image(systemName: "sparkles")
+                        .foregroundColor(AuraColors.cyanAccent)
+                    Text("Aura Full Pro Unlocked")
                         .font(AuraTypography.headline)
                         .foregroundColor(AuraColors.textPrimary)
                 }
-                Text("Full access unlocked • $6.99/mo tier")
+                Text("Developer Mode • 100% Features Active")
                     .font(AuraTypography.caption)
                     .foregroundColor(AuraColors.textSecondary)
             }
             Spacer()
             
-            Button("Manage Plan") {
-                showingPaywall = true
-            }
-            .font(AuraTypography.caption.bold())
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(AuraColors.urgent.opacity(0.15))
-            .foregroundColor(AuraColors.urgent)
-            .clipShape(Capsule())
+            Text("UNLOCKED")
+                .font(AuraTypography.stats)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(AuraColors.success.opacity(0.18))
+                .foregroundColor(AuraColors.success)
+                .clipShape(Capsule())
         }
-        .glassCard(borderColor: AuraColors.urgent.opacity(0.4), glowColor: AuraColors.urgent)
+        .glassCard(borderColor: AuraColors.cyanAccent.opacity(0.4), glowColor: AuraColors.cyanAccent)
     }
     
     // MARK: - Productivity Score Gauge

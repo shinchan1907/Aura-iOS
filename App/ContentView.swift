@@ -40,7 +40,7 @@ struct ContentView: View {
             tabItem(index: 2, title: "Punch", icon: "building.2.crop.circle.fill")
             tabItem(index: 3, title: "Kanban", icon: "rectangle.3.group.fill")
             tabItem(index: 4, title: "Projects", icon: "folder.fill")
-            tabItem(index: 5, title: "Pro", icon: "crown.fill", isPro: true)
+            tabItem(index: 5, title: "Insights", icon: "brain.head.profile")
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
