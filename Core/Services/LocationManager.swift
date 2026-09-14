@@ -89,6 +89,7 @@ public final class LocationManager: NSObject, CLLocationManagerDelegate {
         self.activePunchRecord = record
         
         AuraHaptics.punchIn()
+        FocusActivityManager.shared.startFocusActivity(taskTitle: "Office Work Shift", estimatedSeconds: 28800)
         
         // Schedule notification confirmation
         NotificationManager.shared.scheduleReminder(
@@ -114,6 +115,7 @@ public final class LocationManager: NSObject, CLLocationManagerDelegate {
         self.activePunchRecord = nil
         
         AuraHaptics.punchOut()
+        FocusActivityManager.shared.endFocusActivity()
         
         // Notification confirmation
         let durationFormatted = formatDuration(record.totalDurationSeconds)

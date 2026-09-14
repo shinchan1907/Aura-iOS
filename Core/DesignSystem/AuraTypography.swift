@@ -2,43 +2,48 @@ import SwiftUI
 
 public enum AuraTypography {
     
-    // Large prominent titles (e.g. Today view)
+    // Hero Title (e.g. Today view greeting)
     public static var heroTitle: Font {
-        .system(.largeTitle, design: .rounded).weight(.bold)
+        .system(size: 34, weight: .bold, design: .rounded)
     }
     
     // Main screen headers
     public static var title1: Font {
-        .system(.title, design: .default).weight(.semibold)
+        .system(size: 26, weight: .bold, design: .rounded)
     }
     
-    // Sub-headers
+    // Sub-headers & Section Titles
     public static var title2: Font {
-        .system(.title2, design: .default).weight(.semibold)
+        .system(size: 20, weight: .semibold, design: .rounded)
     }
     
-    // Standard task title
+    // Standard Task & Component Titles
     public static var headline: Font {
-        .system(.headline, design: .default)
+        .system(size: 17, weight: .semibold, design: .default)
     }
     
-    // Body text for notes
+    // Body Text
     public static var body: Font {
-        .system(.body, design: .default)
+        .system(size: 15, weight: .regular, design: .default)
     }
     
-    // Secondary information (tags, times)
+    // Secondary Information
     public static var subheadline: Font {
-        .system(.subheadline, design: .default)
+        .system(size: 14, weight: .medium, design: .default)
     }
     
-    // Small metadata
+    // Captions & Metadata
     public static var caption: Font {
-        .system(.caption, design: .default)
+        .system(size: 12, weight: .medium, design: .default)
     }
     
-    // Tiny stats/progress numbers
+    // Metrics, Monospaced Timers & Stats
     public static var stats: Font {
-        .system(.caption2, design: .monospaced).weight(.medium)
+        .system(size: 12, weight: .bold, design: .monospaced)
+    }
+    
+    // Large Gauge Number Display
+    public static var gaugeNumber: Font {
+        .system(size: 44, weight: .bold, design: .rounded)
     }
 }

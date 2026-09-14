@@ -22,6 +22,7 @@ targets:
         NSLocationWhenInUseUsageDescription: "Aura requires location to track office punch in/out attendance."
         NSLocationAlwaysAndWhenInUseUsageDescription: "Aura uses background location to trigger automatic office punch reminders when entering or leaving office geofences."
         NSLocationAlwaysUsageDescription: "Aura requires background location to trigger office attendance punch alerts."
+        NSFaceIDUsageDescription: "Aura uses Face ID to protect your personal task management data, attendance records, and productivity analytics."
     settings:
       base:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

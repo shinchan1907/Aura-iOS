@@ -71,7 +71,9 @@ public struct InboxView: View {
                         List {
                             ForEach(inboxTasks) { task in
                                 NavigationLink(destination: TaskDetailView(task: task)) {
-                                    TaskRowView(task: task)
+                                    TaskRowView(task: task, onToggle: {
+                                        toggleTaskCompletion(task)
+                                    })
                                 }
                                 .buttonStyle(.plain)
                                 .listRowInsets(EdgeInsets())
@@ -155,6 +157,19 @@ public struct InboxView: View {
             newTaskTitle = ""
             extractedDate = nil
             AuraHaptics.success()
+        }
+    }
+    
+    private func toggleTaskCompletion(_ task: TaskItem) {
+        AuraHaptics.taskCompletion()
+        withAnimation {
+            task.status = task.isCompleted ? .todo : .completed
+            let event = TaskHistory(
+                eventType: task.isCompleted ? .completed : .reopened,
+                details: "Toggled from Inbox",
+                task: task
+            )
+            modelContext.insert(event)
         }
     }
     

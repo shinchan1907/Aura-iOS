@@ -332,6 +332,7 @@ public struct TaskDetailView: View {
             let event = TaskHistory(eventType: .focusSessionStarted, details: "Focus session started", task: task)
             modelContext.insert(event)
         }
+        FocusActivityManager.shared.startFocusActivity(taskTitle: task.title, estimatedSeconds: Int(task.estimatedDuration ?? 1500))
     }
     
     private func deleteTask() {

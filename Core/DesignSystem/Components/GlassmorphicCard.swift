@@ -5,6 +5,7 @@ public struct GlassmorphicCardModifier: ViewModifier {
     var padding: CGFloat = AuraLayout.cardPadding
     var borderColor: Color = AuraColors.glassBorder
     var glowColor: Color = Color.clear
+    var isInteractive: Bool = false
 
     public func body(content: Content) -> some View {
         content
@@ -25,7 +26,7 @@ public struct GlassmorphicCardModifier: ViewModifier {
                         LinearGradient(
                             colors: [
                                 borderColor,
-                                borderColor.opacity(0.2)
+                                borderColor.opacity(0.15)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -34,10 +35,10 @@ public struct GlassmorphicCardModifier: ViewModifier {
                     )
             )
             .shadow(
-                color: glowColor != .clear ? glowColor.opacity(0.25) : AuraLayout.Shadow.subtle.color,
-                radius: glowColor != .clear ? 12 : AuraLayout.Shadow.subtle.radius,
+                color: glowColor != .clear ? glowColor.opacity(0.30) : Color.black.opacity(0.15),
+                radius: glowColor != .clear ? 16 : 10,
                 x: 0,
-                y: glowColor != .clear ? 4 : AuraLayout.Shadow.subtle.y
+                y: glowColor != .clear ? 6 : 4
             )
     }
 }

@@ -45,9 +45,9 @@ public struct TodayView: View {
             ZStack {
                 AuraBackgroundView()
                 
-                // Ambient vibrant glow
+                // Ambient vibrant gradient glow
                 LinearGradient(
-                    colors: [AuraColors.accent.opacity(0.12), Color.clear],
+                    colors: [AuraColors.accent.opacity(0.15), Color.clear],
                     startPoint: .topLeading,
                     endPoint: .center
                 )
@@ -69,11 +69,14 @@ public struct TodayView: View {
                     .padding(AuraLayout.screenPadding)
                 }
             }
-            .navigationTitle("Today")
+            .navigationTitle("Command Center")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: { showingCreateTask = true }) {
+                    Button(action: {
+                        AuraHaptics.selection()
+                        showingCreateTask = true
+                    }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
                             .foregroundColor(AuraColors.accent)
@@ -82,7 +85,7 @@ public struct TodayView: View {
             }
             .sheet(isPresented: $showingCreateTask) {
                 QuickCaptureSheet(isPresented: $showingCreateTask)
-                    .presentationDetents([.height(320)])
+                    .presentationDetents([.height(340)])
             }
         }
     }
@@ -94,44 +97,56 @@ public struct TodayView: View {
                 .foregroundColor(AuraColors.textSecondary)
                 .textCase(.uppercase)
             
-            Text("Good Morning,")
+            Text("Command Center")
                 .font(AuraTypography.heroTitle)
                 .foregroundColor(AuraColors.textPrimary)
             
             HStack {
-                Text("You have \(allIncompleteTasks.count) tasks left.")
-                    .font(AuraTypography.title2)
+                Text("\(allIncompleteTasks.count) tasks remaining • \(allCompletedTasks.count) finished")
+                    .font(AuraTypography.subheadline)
                     .foregroundColor(AuraColors.textSecondary)
                 
                 Spacer()
                 
-                // Minimal circular progress
+                // Precision Progress Ring with % display
                 ZStack {
                     Circle()
-                        .stroke(AuraColors.accent.opacity(0.2), lineWidth: 4)
+                        .stroke(AuraColors.accent.opacity(0.2), lineWidth: 5)
                     Circle()
                         .trim(from: 0, to: todayProgress)
-                        .stroke(AuraColors.accent, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .stroke(
+                            AuraColors.cyberGlow,
+                            style: StrokeStyle(lineWidth: 5, lineCap: .round)
+                        )
                         .rotationEffect(.degrees(-90))
-                        .animation(.spring(response: 0.5, dampingFraction: 0.7), value: todayProgress)
+                        .animation(.spring(response: 0.6, dampingFraction: 0.7), value: todayProgress)
+                    
+                    Text("\(Int(todayProgress * 100))%")
+                        .font(AuraTypography.stats)
+                        .foregroundColor(AuraColors.textPrimary)
                 }
-                .frame(width: 28, height: 28)
+                .frame(width: 44, height: 44)
             }
         }
         .padding(.top, AuraLayout.spacingSmall)
     }
     
     private var attendanceQuickWidget: some View {
-        HStack {
-            Image(systemName: activeAttendanceRecord != nil ? "building.2.crop.circle.fill" : "building.2")
-                .foregroundColor(activeAttendanceRecord != nil ? AuraColors.success : AuraColors.textSecondary)
-                .font(.title3)
+        HStack(spacing: AuraLayout.spacingMedium) {
+            ZStack {
+                Circle()
+                    .fill(activeAttendanceRecord != nil ? AuraColors.success.opacity(0.2) : AuraColors.glassSurface)
+                    .frame(width: 42, height: 42)
+                Image(systemName: activeAttendanceRecord != nil ? "building.2.crop.circle.fill" : "building.2")
+                    .foregroundColor(activeAttendanceRecord != nil ? AuraColors.success : AuraColors.textSecondary)
+                    .font(.title3)
+            }
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(activeAttendanceRecord != nil ? "Work Shift Active" : "Office Punch In")
+                Text(activeAttendanceRecord != nil ? "Work Shift Active" : "Office Punch In Available")
                     .font(AuraTypography.headline)
                     .foregroundColor(AuraColors.textPrimary)
-                Text(activeAttendanceRecord != nil ? "Punched in at \(activeAttendanceRecord!.punchInTime.formatted(date: .omitted, time: .shortened))" : "Tap Attendance tab to mark arrival")
+                Text(activeAttendanceRecord != nil ? "Punched in at \(activeAttendanceRecord!.punchInTime.formatted(date: .omitted, time: .shortened))" : "GPS geofence active • Tap Attendance to punch")
                     .font(AuraTypography.caption)
                     .foregroundColor(AuraColors.textSecondary)
             }
@@ -142,12 +157,16 @@ public struct TodayView: View {
                     .font(AuraTypography.stats)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(AuraColors.success.opacity(0.15))
+                    .background(AuraColors.success.opacity(0.18))
                     .foregroundColor(AuraColors.success)
                     .clipShape(Capsule())
             }
         }
-        .glassCard(padding: 12, borderColor: activeAttendanceRecord != nil ? AuraColors.success.opacity(0.4) : AuraColors.glassBorder)
+        .glassCard(
+            padding: 14,
+            borderColor: activeAttendanceRecord != nil ? AuraColors.success.opacity(0.45) : AuraColors.glassBorder,
+            glowColor: activeAttendanceRecord != nil ? AuraColors.success : Color.clear
+        )
     }
     
     private func focusNowSection(task: TaskItem) -> some View {
@@ -155,15 +174,19 @@ public struct TodayView: View {
             HStack {
                 Image(systemName: "bolt.fill")
                     .foregroundColor(AuraColors.warning)
-                Text("Focus Now")
-                    .font(AuraTypography.headline)
-                    .foregroundColor(AuraColors.textSecondary)
+                Text("Focus Spotlight")
+                    .font(AuraTypography.title2)
+                    .foregroundColor(AuraColors.textPrimary)
+                Spacer()
+                Text("TOP PRIORITY")
+                    .font(AuraTypography.stats)
+                    .foregroundColor(AuraColors.warning)
             }
             
             NavigationLink(destination: TaskDetailView(task: task)) {
                 VStack(alignment: .leading, spacing: AuraLayout.spacingMedium) {
                     Text(task.title)
-                        .font(AuraTypography.title2)
+                        .font(AuraTypography.title1)
                         .foregroundColor(AuraColors.textPrimary)
                         .multilineTextAlignment(.leading)
                     
@@ -175,16 +198,24 @@ public struct TodayView: View {
                         }
                         Spacer()
                         Button(action: { startFocus(for: task) }) {
-                            Text("Start Session")
-                                .font(AuraTypography.subheadline.bold())
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(Capsule().fill(AuraColors.accent))
+                            HStack(spacing: 6) {
+                                Image(systemName: "play.fill")
+                                    .font(.caption)
+                                Text("Start Focus")
+                                    .font(AuraTypography.subheadline.bold())
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 18)
+                            .padding(.vertical, 10)
+                            .background(
+                                Capsule()
+                                    .fill(AuraColors.punchInGradient)
+                                    .shadow(color: AuraColors.accent.opacity(0.4), radius: 8, x: 0, y: 4)
+                            )
                         }
                     }
                 }
-                .glassCard(borderColor: AuraColors.accent.opacity(0.4), glowColor: AuraColors.accent)
+                .glassCard(borderColor: AuraColors.accent.opacity(0.5), glowColor: AuraColors.accent)
             }
             .buttonStyle(.plain)
         }
@@ -203,10 +234,18 @@ public struct TodayView: View {
             } else {
                 ForEach(upNextTasks) { task in
                     NavigationLink(destination: TaskDetailView(task: task)) {
-                        TaskRowView(task: task)
+                        TaskRowView(task: task, onToggle: {
+                            toggleTaskCompletion(task)
+                        })
                     }
                     .buttonStyle(.plain)
                     .contextMenu {
+                        Button {
+                            toggleTaskCompletion(task)
+                        } label: {
+                            Label(task.isCompleted ? "Mark Uncompleted" : "Complete Task", systemImage: "checkmark.circle")
+                        }
+                        
                         Button(role: .destructive) {
                             deleteTask(task)
                         } label: {
@@ -222,14 +261,30 @@ public struct TodayView: View {
         VStack(spacing: AuraLayout.spacingMedium) {
             Image(systemName: "sparkles")
                 .font(.system(size: 48))
-                .foregroundColor(AuraColors.accent.opacity(0.5))
-            Text("Your day is clear.")
-                .font(AuraTypography.headline)
+                .foregroundColor(AuraColors.accent.opacity(0.6))
+            Text("Workspace clear.")
+                .font(AuraTypography.title2)
+                .foregroundColor(AuraColors.textPrimary)
+            Text("You've completed all scheduled tasks for today!")
+                .font(AuraTypography.subheadline)
                 .foregroundColor(AuraColors.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, AuraLayout.spacingXLarge)
         .glassCard()
+    }
+    
+    private func toggleTaskCompletion(_ task: TaskItem) {
+        AuraHaptics.taskCompletion()
+        withAnimation {
+            task.status = task.isCompleted ? .todo : .completed
+            let event = TaskHistory(
+                eventType: task.isCompleted ? .completed : .reopened,
+                details: "Toggled from Command Center",
+                task: task
+            )
+            modelContext.insert(event)
+        }
     }
     
     private func startFocus(for task: TaskItem) {
@@ -242,6 +297,7 @@ public struct TodayView: View {
             let event = TaskHistory(eventType: .focusSessionStarted, details: "Started from Command Center", task: task)
             modelContext.insert(event)
         }
+        FocusActivityManager.shared.startFocusActivity(taskTitle: task.title, estimatedSeconds: Int(task.estimatedDuration ?? 1500))
     }
     
     private func deleteTask(_ task: TaskItem) {
@@ -283,14 +339,14 @@ struct QuickCaptureSheet: View {
                 
                 if let extractedDate = extractedDate {
                     HStack {
-                        Image(systemName: "calendar")
+                        Image(systemName: "calendar.badge.clock")
                             .font(AuraTypography.caption)
-                        Text(extractedDate.formatted(date: .abbreviated, time: .shortened))
-                            .font(AuraTypography.caption)
+                        Text("Detected: \(extractedDate.formatted(date: .abbreviated, time: .shortened))")
+                            .font(AuraTypography.caption.bold())
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(AuraColors.accent.opacity(0.15))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(AuraColors.accent.opacity(0.18))
                     .foregroundColor(AuraColors.accent)
                     .clipShape(Capsule())
                     .transition(.opacity.combined(with: .scale(scale: 0.9)))
@@ -304,13 +360,15 @@ struct QuickCaptureSheet: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(newTaskTitle.isEmpty ? Color.gray : AuraColors.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: AuraLayout.cornerRadiusMedium))
+                        .background(
+                            RoundedRectangle(cornerRadius: AuraLayout.cornerRadiusMedium)
+                                .fill(newTaskTitle.isEmpty ? Color.gray.opacity(0.4) : AuraColors.accent)
+                        )
                 }
                 .disabled(newTaskTitle.isEmpty)
             }
             .padding()
-            .navigationTitle("New Task")
+            .navigationTitle("Quick Capture")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

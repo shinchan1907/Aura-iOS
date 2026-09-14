@@ -5,8 +5,9 @@ public enum AuraColors {
     public static let background = Color(UIColor.systemBackground)
     public static let secondaryBackground = Color(UIColor.secondarySystemBackground)
     public static let tertiaryBackground = Color(UIColor.tertiarySystemBackground)
-    public static let glassSurface = Color.white.opacity(0.08)
-    public static let glassBorder = Color.white.opacity(0.18)
+    public static let glassSurface = Color.white.opacity(0.09)
+    public static let glassBorder = Color.white.opacity(0.22)
+    public static let glassHighlight = Color.white.opacity(0.35)
     
     // Text
     public static let textPrimary = Color.primary
@@ -35,8 +36,26 @@ public enum AuraColors {
         endPoint: .bottomTrailing
     )
     
+    public static let auroraBorealis = LinearGradient(
+        colors: [Color(red: 0.12, green: 0.78, blue: 0.95), Color(red: 0.38, green: 0.35, blue: 0.98), Color(red: 0.95, green: 0.35, blue: 0.70)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    
+    public static let cyberGlow = LinearGradient(
+        colors: [Color(red: 0.38, green: 0.35, blue: 0.98).opacity(0.8), Color(red: 0.12, green: 0.78, blue: 0.95).opacity(0.8)],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+    
     public static let glassGlowGradient = LinearGradient(
-        colors: [Color.white.opacity(0.25), Color.white.opacity(0.05)],
+        colors: [Color.white.opacity(0.35), Color.white.opacity(0.08)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    
+    public static let glassBorderSheen = LinearGradient(
+        colors: [Color.white.opacity(0.40), Color.white.opacity(0.10)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
@@ -51,6 +70,12 @@ public enum AuraColors {
         colors: [Color(red: 1.00, green: 0.35, blue: 0.45), Color(red: 0.95, green: 0.20, blue: 0.60)],
         startPoint: .leading,
         endPoint: .trailing
+    )
+    
+    public static let focusGradient = LinearGradient(
+        colors: [Color(red: 1.00, green: 0.62, blue: 0.10), Color(red: 1.00, green: 0.18, blue: 0.57)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
     )
 }
 
@@ -92,4 +117,3 @@ extension Color {
         self.init(red: r, green: g, blue: b, opacity: a)
     }
 }
-

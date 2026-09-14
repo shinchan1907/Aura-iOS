@@ -31,7 +31,9 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     }
     
     public func scheduleReminder(for task: TaskItem, at date: Date, title: String, body: String, isTimeSensitive: Bool = false) {
-        guard authorizationStatus == .authorized || authorizationStatus == .provisional else { return }
+        if authorizationStatus == .notDetermined {
+            requestAuthorization()
+        }
         
         let content = UNMutableNotificationContent()
         content.title = title
@@ -51,8 +53,15 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         
         content.categoryIdentifier = "TASK_REMINDER"
         
-        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let trigger: UNNotificationTrigger
+        let secondsFromNow = date.timeIntervalSinceNow
+        if secondsFromNow <= 10 {
+            // Trigger immediately in 2 seconds for test/current reminders
+            trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(2, secondsFromNow), repeats: false)
+        } else {
+            let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        }
         
         let request = UNNotificationRequest(identifier: "\(task.id.uuidString)_\(date.timeIntervalSince1970)", content: content, trigger: trigger)
         
@@ -64,7 +73,9 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     }
     
     public func scheduleFollowUpAlarm(for task: TaskItem, at date: Date) {
-        guard authorizationStatus == .authorized || authorizationStatus == .provisional else { return }
+        if authorizationStatus == .notDetermined {
+            requestAuthorization()
+        }
         
         let content = UNMutableNotificationContent()
         content.title = "⏰ Follow-Up Reminder: \(task.title)"
@@ -72,8 +83,14 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         content.sound = .defaultCritical
         content.interruptionLevel = .timeSensitive
         
-        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        let trigger: UNNotificationTrigger
+        let secondsFromNow = date.timeIntervalSinceNow
+        if secondsFromNow <= 10 {
+            trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(2, secondsFromNow), repeats: false)
+        } else {
+            let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
+            trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        }
         
         let request = UNNotificationRequest(identifier: "FOLLOWUP_\(task.id.uuidString)", content: content, trigger: trigger)
         UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
@@ -89,7 +106,11 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     
     // Delegate to handle in-app notification presentation
     public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.banner, .sound, .badge])
+        completionHandler([.banner, .sound, .badge, .list])
+    }
+    
+    public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        completionHandler()
     }
 }
 

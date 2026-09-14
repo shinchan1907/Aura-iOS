@@ -59,6 +59,9 @@ public struct ProAnalyticsHubView: View {
                         
                         // Theme Customizer
                         themeCustomizerCard
+                        
+                        // Security & Privacy Settings
+                        securitySettingsCard
                     }
                     .padding(AuraLayout.screenPadding)
                 }
@@ -266,6 +269,41 @@ public struct ProAnalyticsHubView: View {
                     .buttonStyle(.plain)
                 }
             }
+        }
+        .glassCard()
+    }
+    
+    // MARK: - Security & Privacy Settings
+    private var securitySettingsCard: some View {
+        VStack(alignment: .leading, spacing: AuraLayout.spacingMedium) {
+            HStack {
+                Image(systemName: "lock.shield.fill")
+                    .foregroundColor(AuraColors.accent)
+                    .font(.title3)
+                Text("Security & Face ID Lock")
+                    .font(AuraTypography.headline)
+                    .foregroundColor(AuraColors.textPrimary)
+            }
+            
+            Toggle(isOn: Binding(
+                get: { BiometricAuthManager.shared.isBiometricsEnabled },
+                set: { newValue in
+                    BiometricAuthManager.shared.isBiometricsEnabled = newValue
+                    if newValue {
+                        BiometricAuthManager.shared.authenticate()
+                    }
+                }
+            )) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(BiometricAuthManager.shared.biometricType == .faceID ? "Require Face ID" : (BiometricAuthManager.shared.biometricType == .touchID ? "Require Touch ID" : "Biometric App Lock"))
+                        .font(AuraTypography.body.bold())
+                        .foregroundColor(AuraColors.textPrimary)
+                    Text("Lock Aura when exiting or switching apps")
+                        .font(AuraTypography.caption)
+                        .foregroundColor(AuraColors.textSecondary)
+                }
+            }
+            .tint(AuraColors.accent)
         }
         .glassCard()
     }

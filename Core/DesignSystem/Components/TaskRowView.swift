@@ -3,37 +3,70 @@ import SwiftData
 
 public struct TaskRowView: View {
     let task: TaskItem
+    var onToggle: (() -> Void)? = nil
     
-    public init(task: TaskItem) {
+    @State private var isPressed = false
+    
+    public init(task: TaskItem, onToggle: (() -> Void)? = nil) {
         self.task = task
+        self.onToggle = onToggle
     }
     
     public var body: some View {
         HStack(alignment: .center, spacing: AuraLayout.spacingMedium) {
-            // Status Indicator Indicator
-            Circle()
-                .stroke(colorForStatus(task.status), lineWidth: 2)
-                .background(task.isCompleted ? colorForStatus(task.status) : Color.clear)
-                .frame(width: 22, height: 22)
+            // Interactive Checkmark Icon with Spring Animation
+            Button(action: {
+                AuraHaptics.taskCompletion()
+                onToggle?()
+            }) {
+                ZStack {
+                    Circle()
+                        .stroke(colorForStatus(task.status), lineWidth: 2)
+                        .frame(width: 24, height: 24)
+                    
+                    if task.isCompleted {
+                        Circle()
+                            .fill(AuraColors.success)
+                            .frame(width: 24, height: 24)
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.white)
+                            .transition(.scale.combined(with: .opacity))
+                    }
+                }
+            }
+            .buttonStyle(.plain)
             
             VStack(alignment: .leading, spacing: 4) {
                 // Title
                 Text(task.title)
                     .font(AuraTypography.headline)
                     .foregroundColor(task.isCompleted ? AuraColors.textSecondary : AuraColors.textPrimary)
-                    .strikethrough(task.isCompleted)
+                    .strikethrough(task.isCompleted, color: AuraColors.textSecondary.opacity(0.6))
+                    .animation(.easeInOut(duration: 0.2), value: task.isCompleted)
                 
-                // Metadata Row
+                // Badges & Metadata Pill Row
                 HStack(spacing: AuraLayout.spacingSmall) {
+                    // Priority Pill
                     if task.priority == .urgent {
                         Text("URGENT")
                             .font(AuraTypography.stats)
-                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
                             .background(AuraColors.urgent.opacity(0.2))
                             .foregroundColor(AuraColors.urgent)
                             .clipShape(Capsule())
+                    } else if task.priority == .high {
+                        Text("HIGH")
+                            .font(AuraTypography.stats)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(AuraColors.warning.opacity(0.18))
+                            .foregroundColor(AuraColors.warning)
+                            .clipShape(Capsule())
                     }
                     
+                    // Project Badge
                     if let project = task.project {
                         HStack(spacing: 4) {
                             Circle()
@@ -43,21 +76,31 @@ public struct TaskRowView: View {
                                 .font(AuraTypography.caption)
                                 .foregroundColor(AuraColors.textSecondary)
                         }
-                    } else {
-                        Text("Standalone")
-                            .font(AuraTypography.caption)
-                            .foregroundColor(AuraColors.textSecondary)
                     }
                     
+                    // Due Date Badge
                     if let dueDate = task.dueDate {
+                        let isOverdue = dueDate < Date() && !task.isCompleted
                         HStack(spacing: 4) {
-                            Image(systemName: "calendar")
+                            Image(systemName: isOverdue ? "exclamationmark.clock.fill" : "calendar")
                             Text(dueDate.formatted(date: .abbreviated, time: .shortened))
                         }
                         .font(AuraTypography.caption)
-                        .foregroundColor(dueDate < Date() && !task.isCompleted ? AuraColors.destructive : AuraColors.accent)
+                        .foregroundColor(isOverdue ? AuraColors.destructive : AuraColors.accent)
                     }
                     
+                    // Subtask Progress Pill
+                    if !task.subtasks.isEmpty {
+                        let completedCount = task.subtasks.filter { $0.isCompleted }.count
+                        HStack(spacing: 3) {
+                            Image(systemName: "checklist")
+                            Text("\(completedCount)/\(task.subtasks.count)")
+                        }
+                        .font(AuraTypography.stats)
+                        .foregroundColor(AuraColors.textSecondary)
+                    }
+                    
+                    // Alarm Icon
                     if task.followUpDate != nil {
                         Image(systemName: "bell.fill")
                             .font(AuraTypography.caption)
@@ -66,13 +109,24 @@ public struct TaskRowView: View {
                 }
             }
             Spacer()
+            
+            // Chevron indicator for navigation detail
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(AuraColors.textTertiary)
         }
-        .glassCard(padding: 12, borderColor: task.priority == .urgent ? AuraColors.urgent.opacity(0.4) : AuraColors.glassBorder)
+        .glassCard(
+            padding: 14,
+            borderColor: task.priority == .urgent ? AuraColors.urgent.opacity(0.5) : (task.priority == .high ? AuraColors.warning.opacity(0.35) : AuraColors.glassBorder),
+            glowColor: task.priority == .urgent ? AuraColors.urgent : Color.clear
+        )
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isPressed)
     }
     
     private func colorForStatus(_ status: TaskItem.Status) -> Color {
         switch status {
-        case .todo: return AuraColors.textSecondary
+        case .todo: return AuraColors.textSecondary.opacity(0.6)
         case .inProgress: return AuraColors.warning
         case .completed: return AuraColors.success
         case .archived: return AuraColors.projectPurple
