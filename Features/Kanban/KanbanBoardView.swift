@@ -54,7 +54,7 @@ public struct KanbanBoardView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                AuraColors.background.ignoresSafeArea()
+                AuraBackgroundView()
                 
                 VStack(spacing: 0) {
                     // Filter & Search Header
@@ -349,28 +349,75 @@ struct QuickKanbanTaskSheet: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Task Details") {
-                    TextField("Title", text: $title)
-                    TextField("Notes", text: $notes, axis: .vertical)
-                }
+            ZStack {
+                AuraBackgroundView()
                 
-                Section("Priority") {
-                    Picker("Priority", selection: $priority) {
-                        ForEach(TaskItem.Priority.allCases, id: \.self) { p in
-                            Text(p.label).tag(p)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AuraLayout.spacingLarge) {
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Task Information")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            AuraGlassTextField(placeholder: "Task Title", text: $title, iconName: "pencil")
+                            AuraGlassTextField(placeholder: "Detailed Notes", text: $notes, iconName: "note.text")
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Priority Level")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            AuraGlassSegmentedPicker(
+                                items: TaskItem.Priority.allCases,
+                                selection: $priority,
+                                titleKeyPath: \.label
+                            )
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Project Workspace")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 8) {
+                                    Button(action: {
+                                        selectedProject = nil
+                                        AuraHaptics.selection()
+                                    }) {
+                                        Text("None (Standalone)")
+                                            .font(AuraTypography.subheadline.weight(selectedProject == nil ? .bold : .regular))
+                                            .padding(.horizontal, 12).padding(.vertical, 6)
+                                            .background(selectedProject == nil ? AuraColors.accent.opacity(0.2) : AuraColors.glassSurface)
+                                            .foregroundColor(selectedProject == nil ? AuraColors.accent : AuraColors.textSecondary)
+                                            .clipShape(Capsule())
+                                    }
+                                    
+                                    ForEach(projects) { project in
+                                        let isSel = selectedProject?.id == project.id
+                                        Button(action: {
+                                            selectedProject = project
+                                            AuraHaptics.selection()
+                                        }) {
+                                            Text(project.title)
+                                                .font(AuraTypography.subheadline.weight(isSel ? .bold : .regular))
+                                                .padding(.horizontal, 12).padding(.vertical, 6)
+                                                .background(isSel ? Color(hex: project.colorHex)?.opacity(0.25) ?? AuraColors.accent.opacity(0.25) : AuraColors.glassSurface)
+                                                .foregroundColor(isSel ? Color(hex: project.colorHex) ?? AuraColors.accent : AuraColors.textSecondary)
+                                                .clipShape(Capsule())
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        .glassCard()
+                        
+                        AuraGlassButton(title: "Create Kanban Task", iconName: "plus.circle.fill") {
+                            addTask()
                         }
                     }
-                    .pickerStyle(.segmented)
-                }
-                
-                Section("Project (Optional)") {
-                    Picker("Project", selection: $selectedProject) {
-                        Text("None (Standalone)").tag(Project?.none)
-                        ForEach(projects) { project in
-                            Text(project.title).tag(Project?.some(project))
-                        }
-                    }
+                    .padding(AuraLayout.screenPadding)
                 }
             }
             .navigationTitle("New Kanban Task")
@@ -378,10 +425,6 @@ struct QuickKanbanTaskSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { isPresented = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") { addTask() }
-                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
         }

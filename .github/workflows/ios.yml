@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build Aura (Simulator)
+    name: Build Aura (Simulator & Unsigned IPA)
     runs-on: macos-14
 
     steps:
@@ -24,7 +24,7 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_15.2.app || true
 
-      - name: Build App (Unsigned for CI)
+      - name: Build Simulator (Verification)
         run: |
           set -o pipefail
           xcodebuild clean build \
@@ -34,6 +34,27 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO | xcpretty
 
-      # In a real pipeline, you would archive the `.app` or run tests here.
-      # Because this is a simulator build, we don't output an IPA. 
-      # See release.yml for production signing.
+      - name: Build Unsigned iPhone Target & Create IPA
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Aura.xcodeproj \
+            -scheme Aura \
+            -sdk iphoneos \
+            -configuration Release \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            BUILD_DIR=build
+
+          mkdir -p build/Payload
+          APP_PATH=$(find build -name "Aura.app" -type d | head -n 1)
+          echo "Found app at $APP_PATH"
+          cp -r "$APP_PATH" build/Payload/
+          cd build && zip -r Aura-Unsigned.ipa Payload
+
+      - name: Upload Unsigned IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Aura-Unsigned-IPA
+          path: build/Aura-Unsigned.ipa

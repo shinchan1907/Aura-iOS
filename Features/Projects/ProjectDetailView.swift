@@ -281,26 +281,46 @@ struct ProjectTaskCreationSheet: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Task Name") {
-                    TextField("Title", text: $title)
-                    TextField("Notes", text: $notes, axis: .vertical)
-                }
+            ZStack {
+                AuraBackgroundView()
                 
-                Section("Priority") {
-                    Picker("Priority", selection: $priority) {
-                        ForEach(TaskItem.Priority.allCases, id: \.self) { p in
-                            Text(p.label).tag(p)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AuraLayout.spacingLarge) {
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Task Information")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            AuraGlassTextField(placeholder: "Task Title", text: $title, iconName: "pencil")
+                            AuraGlassTextField(placeholder: "Notes (Optional)", text: $notes, iconName: "note.text")
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Priority Level")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            AuraGlassSegmentedPicker(
+                                items: TaskItem.Priority.allCases,
+                                selection: $priority,
+                                titleKeyPath: \.label
+                            )
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            AuraGlassToggle(title: "Schedule Due Date", iconName: "calendar", isOn: $includeDueDate)
+                            if includeDueDate {
+                                DatePicker("Select Date", selection: $dueDate)
+                                    .font(AuraTypography.body)
+                            }
+                        }
+                        .glassCard()
+                        
+                        AuraGlassButton(title: "Add Task to Workspace", iconName: "plus.circle.fill") {
+                            addTask()
                         }
                     }
-                    .pickerStyle(.segmented)
-                }
-                
-                Section("Due Date") {
-                    Toggle("Set Due Date", isOn: $includeDueDate)
-                    if includeDueDate {
-                        DatePicker("Due Date", selection: $dueDate)
-                    }
+                    .padding(AuraLayout.screenPadding)
                 }
             }
             .navigationTitle("New Project Task")
@@ -308,10 +328,6 @@ struct ProjectTaskCreationSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { isPresented = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Add Task") { addTask() }
-                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
         }

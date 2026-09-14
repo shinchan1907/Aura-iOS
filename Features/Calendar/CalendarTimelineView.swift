@@ -26,7 +26,7 @@ public struct CalendarTimelineView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                AuraColors.background.ignoresSafeArea()
+                AuraBackgroundView()
                 
                 ScrollView {
                     VStack(spacing: AuraLayout.spacingLarge) {

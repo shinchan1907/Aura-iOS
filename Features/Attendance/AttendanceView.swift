@@ -45,8 +45,7 @@ public struct AttendanceView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                // Vibrant background ambient glow
-                AuraColors.background.ignoresSafeArea()
+                AuraBackgroundView()
                 
                 LinearGradient(
                     colors: [
@@ -463,44 +462,65 @@ struct OfficeConfigSheet: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Office Location Info") {
-                    TextField("Office Name", text: $name)
-                    
-                    Button("📍 Use Current GPS Location") {
-                        if let loc = LocationManager.shared.currentLocation {
-                            latitudeString = "\(loc.coordinate.latitude)"
-                            longitudeString = "\(loc.coordinate.longitude)"
+            ZStack {
+                AuraBackgroundView()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AuraLayout.spacingLarge) {
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Office Location Info")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            
+                            AuraGlassTextField(placeholder: "Office Name", text: $name, iconName: "building.2.fill")
+                            
+                            Button(action: {
+                                if let loc = LocationManager.shared.currentLocation {
+                                    latitudeString = "\(loc.coordinate.latitude)"
+                                    longitudeString = "\(loc.coordinate.longitude)"
+                                }
+                            }) {
+                                HStack {
+                                    Image(systemName: "location.fill")
+                                    Text("Use Current GPS Location")
+                                }
+                                .font(AuraTypography.subheadline.bold())
+                                .foregroundColor(AuraColors.accent)
+                                .padding(.vertical, 4)
+                            }
+                            
+                            HStack(spacing: AuraLayout.spacingMedium) {
+                                AuraGlassTextField(placeholder: "Latitude", text: $latitudeString)
+                                AuraGlassTextField(placeholder: "Longitude", text: $longitudeString)
+                            }
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Geofence Boundary Radius: \(Int(radius))m")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            
+                            Slider(value: $radius, in: 50...500, step: 25)
+                                .tint(AuraColors.accent)
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Automated Geofence Alerts")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            
+                            AuraGlassToggle(title: "Auto-remind on Entry", iconName: "arrow.right.to.line.circle.fill", isOn: $autoPunchIn)
+                            AuraGlassToggle(title: "Auto-remind on Exit", iconName: "arrow.left.to.line.circle.fill", isOn: $autoPunchOut)
+                        }
+                        .glassCard()
+                        
+                        AuraGlassButton(title: "Save Configuration", iconName: "checkmark.circle.fill") {
+                            saveOffice()
                         }
                     }
-                    .foregroundColor(AuraColors.accent)
-                    
-                    HStack {
-                        Text("Latitude")
-                        Spacer()
-                        TextField("Lat", text: $latitudeString)
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.decimalPad)
-                    }
-                    HStack {
-                        Text("Longitude")
-                        Spacer()
-                        TextField("Lon", text: $longitudeString)
-                            .multilineTextAlignment(.trailing)
-                            .keyboardType(.decimalPad)
-                    }
-                }
-                
-                Section("Geofence Radius") {
-                    VStack(alignment: .leading) {
-                        Text("Radius: \(Int(radius)) meters")
-                        Slider(value: $radius, in: 50...500, step: 25)
-                    }
-                }
-                
-                Section("Automated Geofence Actions") {
-                    Toggle("Auto-remind on Entry", isOn: $autoPunchIn)
-                    Toggle("Auto-remind on Exit", isOn: $autoPunchOut)
+                    .padding(AuraLayout.screenPadding)
                 }
             }
             .navigationTitle("Configure Office GPS")
@@ -508,9 +528,6 @@ struct OfficeConfigSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { isPresented = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveOffice() }
                 }
             }
             .onAppear {
@@ -570,20 +587,43 @@ struct ManualPunchSheet: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Punch In Time") {
-                    DatePicker("Punch In", selection: $punchInDate, displayedComponents: [.date, .hourAndMinute])
-                }
+            ZStack {
+                AuraBackgroundView()
                 
-                Section("Punch Out Time") {
-                    Toggle("Set Punch Out", isOn: $hasPunchOut)
-                    if hasPunchOut {
-                        DatePicker("Punch Out", selection: $punchOutDate, displayedComponents: [.date, .hourAndMinute])
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AuraLayout.spacingLarge) {
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Punch In Timestamp")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            DatePicker("Punch In Time", selection: $punchInDate, displayedComponents: [.date, .hourAndMinute])
+                                .font(AuraTypography.body)
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            AuraGlassToggle(title: "Include Punch Out Time", iconName: "clock.fill", isOn: $hasPunchOut)
+                            
+                            if hasPunchOut {
+                                DatePicker("Punch Out Time", selection: $punchOutDate, displayedComponents: [.date, .hourAndMinute])
+                                    .font(AuraTypography.body)
+                            }
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Punch Notes")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            AuraGlassTextField(placeholder: "Notes (e.g. Worked from Home)", text: $notes, iconName: "note.text")
+                        }
+                        .glassCard()
+                        
+                        AuraGlassButton(title: "Save Punch Record", iconName: "checkmark.seal.fill") {
+                            saveManualPunch()
+                        }
                     }
-                }
-                
-                Section("Notes") {
-                    TextField("Optional notes (e.g. Worked from home)", text: $notes)
+                    .padding(AuraLayout.screenPadding)
                 }
             }
             .navigationTitle("Manual Punch Entry")
@@ -591,9 +631,6 @@ struct ManualPunchSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { isPresented = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveManualPunch() }
                 }
             }
         }

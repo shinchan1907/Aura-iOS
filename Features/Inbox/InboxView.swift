@@ -17,7 +17,7 @@ public struct InboxView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                AuraColors.background.ignoresSafeArea()
+                AuraBackgroundView()
                 
                 VStack(spacing: 0) {
                     // Quick Entry Area

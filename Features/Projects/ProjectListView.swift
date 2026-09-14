@@ -17,7 +17,7 @@ public struct ProjectListView: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                AuraColors.background.ignoresSafeArea()
+                AuraBackgroundView()
                 
                 VStack(spacing: 0) {
                     // Filter Bar
@@ -146,56 +146,81 @@ struct CreateProjectSheet: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Project Details") {
-                    TextField("Project Title", text: $title)
-                    TextField("Description (Optional)", text: $descriptionText, axis: .vertical)
-                }
+            ZStack {
+                AuraBackgroundView()
                 
-                Section("Theme Color") {
-                    HStack(spacing: AuraLayout.spacingMedium) {
-                        ForEach(availableColors, id: \.self) { hex in
-                            Circle()
-                                .fill(Color(hex: hex) ?? .blue)
-                                .frame(width: 32, height: 32)
-                                .overlay(
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AuraLayout.spacingLarge) {
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Project Info")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            AuraGlassTextField(placeholder: "Project Title", text: $title, iconName: "folder.fill")
+                            AuraGlassTextField(placeholder: "Description (Optional)", text: $descriptionText, iconName: "text.alignleft")
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Theme Color")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            
+                            HStack(spacing: AuraLayout.spacingMedium) {
+                                ForEach(availableColors, id: \.self) { hex in
                                     Circle()
-                                        .stroke(Color.white, lineWidth: selectedColorHex == hex ? 3 : 0)
-                                )
-                                .onTapGesture {
-                                    selectedColorHex = hex
-                                    AuraHaptics.selection()
+                                        .fill(Color(hex: hex) ?? .blue)
+                                        .frame(width: 34, height: 34)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white, lineWidth: selectedColorHex == hex ? 3 : 0)
+                                        )
+                                        .onTapGesture {
+                                            selectedColorHex = hex
+                                            AuraHaptics.selection()
+                                        }
                                 }
+                            }
+                        }
+                        .glassCard()
+                        
+                        VStack(alignment: .leading, spacing: AuraLayout.spacingSmall) {
+                            Text("Workspace Icon")
+                                .font(AuraTypography.headline)
+                                .foregroundColor(AuraColors.textSecondary)
+                            
+                            HStack(spacing: AuraLayout.spacingMedium) {
+                                ForEach(availableIcons, id: \.self) { icon in
+                                    Image(systemName: icon)
+                                        .font(.title2)
+                                        .foregroundColor(selectedIcon == icon ? (Color(hex: selectedColorHex) ?? AuraColors.accent) : AuraColors.textSecondary)
+                                        .padding(10)
+                                        .background(selectedIcon == icon ? AuraColors.glassSurface : Color.clear)
+                                        .clipShape(RoundedRectangle(cornerRadius: AuraLayout.cornerRadiusSmall))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: AuraLayout.cornerRadiusSmall)
+                                                .stroke(selectedIcon == icon ? (Color(hex: selectedColorHex) ?? AuraColors.accent) : Color.clear, lineWidth: 1)
+                                        )
+                                        .onTapGesture {
+                                            selectedIcon = icon
+                                            AuraHaptics.selection()
+                                        }
+                                }
+                            }
+                        }
+                        .glassCard()
+                        
+                        AuraGlassButton(title: "Create Workspace", iconName: "folder.badge.plus") {
+                            createProject()
                         }
                     }
-                }
-                
-                Section("Icon") {
-                    HStack(spacing: AuraLayout.spacingMedium) {
-                        ForEach(availableIcons, id: \.self) { icon in
-                            Image(systemName: icon)
-                                .font(.title2)
-                                .foregroundColor(selectedIcon == icon ? (Color(hex: selectedColorHex) ?? AuraColors.accent) : AuraColors.textSecondary)
-                                .padding(8)
-                                .background(selectedIcon == icon ? AuraColors.glassSurface : Color.clear)
-                                .clipShape(RoundedRectangle(cornerRadius: 8))
-                                .onTapGesture {
-                                    selectedIcon = icon
-                                    AuraHaptics.selection()
-                                }
-                        }
-                    }
+                    .padding(AuraLayout.screenPadding)
                 }
             }
-            .navigationTitle("New Project")
+            .navigationTitle("New Workspace")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { isPresented = false }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Create") { createProject() }
-                        .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
         }
