@@ -3,22 +3,28 @@ import SwiftData
 
 public struct TodayView: View {
     @Query(filter: #Predicate<TaskItem> { task in
-        task.statusRaw != 2 // 2 is completed
+        task.statusRaw != 2 && !task.isArchived // 2 is completed
     }, sort: \TaskItem.dueDate) 
     private var allIncompleteTasks: [TaskItem]
     
     @Query(filter: #Predicate<TaskItem> { task in
-        task.statusRaw == 2
+        task.statusRaw == 2 && !task.isArchived
     }) 
     private var allCompletedTasks: [TaskItem]
+    
+    @Query(sort: \AttendanceRecord.punchInTime, order: .reverse)
+    private var attendanceRecords: [AttendanceRecord]
     
     @Environment(\.modelContext) private var modelContext
     @State private var showingCreateTask = false
     
     public init() {}
     
+    private var activeAttendanceRecord: AttendanceRecord? {
+        attendanceRecords.first(where: { $0.punchOutTime == nil })
+    }
+    
     private var focusNowTask: TaskItem? {
-        // Simple heuristic: InProgress > Highest Priority > Nearest Due Date
         allIncompleteTasks.sorted { (t1, t2) in
             if t1.status == .inProgress && t2.status != .inProgress { return true }
             if t2.status == .inProgress && t1.status != .inProgress { return false }
@@ -39,9 +45,20 @@ public struct TodayView: View {
             ZStack {
                 AuraColors.background.ignoresSafeArea()
                 
+                // Ambient vibrant glow
+                LinearGradient(
+                    colors: [AuraColors.accent.opacity(0.12), Color.clear],
+                    startPoint: .topLeading,
+                    endPoint: .center
+                )
+                .ignoresSafeArea()
+                
                 ScrollView {
                     VStack(alignment: .leading, spacing: AuraLayout.spacingLarge) {
                         headerSection
+                        
+                        // Office Punch Status Quick Pill
+                        attendanceQuickWidget
                         
                         if let focusTask = focusNowTask {
                             focusNowSection(task: focusTask)
@@ -65,7 +82,7 @@ public struct TodayView: View {
             }
             .sheet(isPresented: $showingCreateTask) {
                 QuickCaptureSheet(isPresented: $showingCreateTask)
-                    .presentationDetents([.height(300)])
+                    .presentationDetents([.height(320)])
             }
         }
     }
@@ -98,10 +115,39 @@ public struct TodayView: View {
                         .rotationEffect(.degrees(-90))
                         .animation(.spring(response: 0.5, dampingFraction: 0.7), value: todayProgress)
                 }
-                .frame(width: 24, height: 24)
+                .frame(width: 28, height: 28)
             }
         }
-        .padding(.top, AuraLayout.spacingMedium)
+        .padding(.top, AuraLayout.spacingSmall)
+    }
+    
+    private var attendanceQuickWidget: some View {
+        HStack {
+            Image(systemName: activeAttendanceRecord != nil ? "building.2.crop.circle.fill" : "building.2")
+                .foregroundColor(activeAttendanceRecord != nil ? AuraColors.success : AuraColors.textSecondary)
+                .font(.title3)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(activeAttendanceRecord != nil ? "Work Shift Active" : "Office Punch In")
+                    .font(AuraTypography.headline)
+                    .foregroundColor(AuraColors.textPrimary)
+                Text(activeAttendanceRecord != nil ? "Punched in at \(activeAttendanceRecord!.punchInTime.formatted(date: .omitted, time: .shortened))" : "Tap Attendance tab to mark arrival")
+                    .font(AuraTypography.caption)
+                    .foregroundColor(AuraColors.textSecondary)
+            }
+            Spacer()
+            
+            if activeAttendanceRecord != nil {
+                Text("PUNCHED IN")
+                    .font(AuraTypography.stats)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(AuraColors.success.opacity(0.15))
+                    .foregroundColor(AuraColors.success)
+                    .clipShape(Capsule())
+            }
+        }
+        .glassCard(padding: 12, borderColor: activeAttendanceRecord != nil ? AuraColors.success.opacity(0.4) : AuraColors.glassBorder)
     }
     
     private func focusNowSection(task: TaskItem) -> some View {
@@ -138,7 +184,7 @@ public struct TodayView: View {
                         }
                     }
                 }
-                .auraCard(backgroundColor: AuraColors.accent.opacity(0.05))
+                .glassCard(borderColor: AuraColors.accent.opacity(0.4), glowColor: AuraColors.accent)
             }
             .buttonStyle(.plain)
         }
@@ -183,6 +229,7 @@ public struct TodayView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, AuraLayout.spacingXLarge)
+        .glassCard()
     }
     
     private func startFocus(for task: TaskItem) {
@@ -210,6 +257,7 @@ struct QuickCaptureSheet: View {
     @Binding var isPresented: Bool
     @State private var newTaskTitle: String = ""
     @State private var extractedDate: Date? = nil
+    @State private var priority: TaskItem.Priority = .medium
     @FocusState private var isFocused: Bool
     
     var body: some View {
@@ -225,6 +273,13 @@ struct QuickCaptureSheet: View {
                         addTask()
                     }
                     .submitLabel(.done)
+                
+                Picker("Priority", selection: $priority) {
+                    ForEach(TaskItem.Priority.allCases, id: \.self) { p in
+                        Text(p.label).tag(p)
+                    }
+                }
+                .pickerStyle(.segmented)
                 
                 if let extractedDate = extractedDate {
                     HStack {
@@ -297,7 +352,7 @@ struct QuickCaptureSheet: View {
         guard !trimmed.isEmpty else { return }
         
         withAnimation {
-            let newTask = TaskItem(title: trimmed, dueDate: extractedDate)
+            let newTask = TaskItem(title: trimmed, priority: priority, dueDate: extractedDate)
             modelContext.insert(newTask)
             
             let event = TaskHistory(eventType: .created, details: "Captured in Quick Capture Sheet", task: newTask)
@@ -308,4 +363,3 @@ struct QuickCaptureSheet: View {
         }
     }
 }
-

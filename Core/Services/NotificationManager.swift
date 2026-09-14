@@ -63,16 +63,33 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         }
     }
     
+    public func scheduleFollowUpAlarm(for task: TaskItem, at date: Date) {
+        guard authorizationStatus == .authorized || authorizationStatus == .provisional else { return }
+        
+        let content = UNMutableNotificationContent()
+        content.title = "⏰ Follow-Up Reminder: \(task.title)"
+        content.body = "It's time to check progress or complete this task."
+        content.sound = .defaultCritical
+        content.interruptionLevel = .timeSensitive
+        
+        let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
+        let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
+        
+        let request = UNNotificationRequest(identifier: "FOLLOWUP_\(task.id.uuidString)", content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request, withCompletionHandler: nil)
+    }
+    
     public func removeReminders(for task: TaskItem) {
         // Find and remove all pending notifications containing the task ID
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
-            let identifiersToRemove = requests.filter { $0.identifier.hasPrefix(task.id.uuidString) }.map { $0.identifier }
+            let identifiersToRemove = requests.filter { $0.identifier.contains(task.id.uuidString) }.map { $0.identifier }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
         }
     }
     
     // Delegate to handle in-app notification presentation
     public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
-        completionHandler([.banner, .sound])
+        completionHandler([.banner, .sound, .badge])
     }
 }
+

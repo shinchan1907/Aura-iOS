@@ -8,7 +8,9 @@ public enum AuraSchema {
             Project.self,
             ProjectMilestone.self,
             FocusSession.self,
-            Tag.self
+            Tag.self,
+            AttendanceRecord.self,
+            OfficeLocation.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

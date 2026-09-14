@@ -33,7 +33,6 @@ public enum AuraHaptics {
     }
     
     public static func taskCompletion() {
-        // A distinct, satisfying completion haptic
         let generator = UIImpactFeedbackGenerator(style: .rigid)
         generator.prepare()
         generator.impactOccurred()
@@ -43,4 +42,28 @@ public enum AuraHaptics {
             successGen.notificationOccurred(.success)
         }
     }
+    
+    public static func punchIn() {
+        let generator = UIImpactFeedbackGenerator(style: .heavy)
+        generator.prepare()
+        generator.impactOccurred()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            let successGen = UINotificationFeedbackGenerator()
+            successGen.notificationOccurred(.success)
+        }
+    }
+    
+    public static func punchOut() {
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.prepare()
+        generator.impactOccurred()
+    }
+    
+    public static func kanbanMove() {
+        let generator = UIImpactFeedbackGenerator(style: .soft)
+        generator.prepare()
+        generator.impactOccurred()
+    }
 }
+

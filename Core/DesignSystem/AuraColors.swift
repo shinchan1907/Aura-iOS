@@ -1,10 +1,12 @@
 import SwiftUI
 
 public enum AuraColors {
-    // Backgrounds
-    public static let background = Color("Background") // Define in Assets or use system
-    public static let secondaryBackground = Color("SecondaryBackground")
-    public static let tertiaryBackground = Color("TertiaryBackground")
+    // Backgrounds & Glass
+    public static let background = Color(UIColor.systemBackground)
+    public static let secondaryBackground = Color(UIColor.secondarySystemBackground)
+    public static let tertiaryBackground = Color(UIColor.tertiarySystemBackground)
+    public static let glassSurface = Color.white.opacity(0.08)
+    public static let glassBorder = Color.white.opacity(0.18)
     
     // Text
     public static let textPrimary = Color.primary
@@ -12,23 +14,43 @@ public enum AuraColors {
     public static let textTertiary = Color(uiColor: .tertiaryLabel)
     
     // Accents & State
-    public static let accent = Color.indigo
-    public static let success = Color.mint
-    public static let warning = Color.orange
-    public static let destructive = Color.red
+    public static let accent = Color(red: 0.38, green: 0.35, blue: 0.98) // Cyber Violet
+    public static let cyanAccent = Color(red: 0.12, green: 0.78, blue: 0.95) // Aurora Cyan
+    public static let success = Color(red: 0.15, green: 0.85, blue: 0.55) // Emerald Neon
+    public static let warning = Color(red: 1.00, green: 0.62, blue: 0.10) // Amber Glow
+    public static let destructive = Color(red: 0.98, green: 0.26, blue: 0.35) // Crimson Red
+    public static let urgent = Color(red: 1.00, green: 0.18, blue: 0.57) // Neon Rose
     
-    // Category Colors (for Projects/Tags)
-    public static let projectBlue = Color.blue
-    public static let projectPurple = Color.purple
-    public static let projectPink = Color.pink
-    public static let projectGreen = Color.green
-    public static let projectYellow = Color.yellow
+    // Category Colors (for Projects/Tags/Attendance)
+    public static let projectBlue = Color(red: 0.20, green: 0.50, blue: 1.00)
+    public static let projectPurple = Color(red: 0.65, green: 0.35, blue: 0.95)
+    public static let projectPink = Color(red: 0.95, green: 0.35, blue: 0.70)
+    public static let projectGreen = Color(red: 0.20, green: 0.80, blue: 0.45)
+    public static let projectYellow = Color(red: 1.00, green: 0.75, blue: 0.15)
     
     // Gradients
     public static let premiumGradient = LinearGradient(
-        colors: [Color.indigo.opacity(0.8), Color.purple.opacity(0.8)],
+        colors: [Color(red: 0.38, green: 0.35, blue: 0.98), Color(red: 0.65, green: 0.35, blue: 0.95)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
+    )
+    
+    public static let glassGlowGradient = LinearGradient(
+        colors: [Color.white.opacity(0.25), Color.white.opacity(0.05)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    
+    public static let punchInGradient = LinearGradient(
+        colors: [Color(red: 0.12, green: 0.78, blue: 0.95), Color(red: 0.38, green: 0.35, blue: 0.98)],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+    
+    public static let punchOutGradient = LinearGradient(
+        colors: [Color(red: 1.00, green: 0.35, blue: 0.45), Color(red: 0.95, green: 0.20, blue: 0.60)],
+        startPoint: .leading,
+        endPoint: .trailing
     )
 }
 
@@ -70,3 +92,4 @@ extension Color {
         self.init(red: r, green: g, blue: b, opacity: a)
     }
 }
+

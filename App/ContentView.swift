@@ -18,25 +18,36 @@ struct ContentView: View {
                 }
                 .tag(1)
             
+            AttendanceView()
+                .tabItem {
+                    Label("Attendance", systemImage: "building.2.crop.circle.fill")
+                }
+                .tag(2)
+            
+            KanbanBoardView()
+                .tabItem {
+                    Label("Kanban", systemImage: "rectangle.3.group.fill")
+                }
+                .tag(3)
+            
             ProjectListView()
                 .tabItem {
                     Label("Projects", systemImage: "folder.fill")
                 }
-                .tag(2)
+                .tag(4)
             
             CalendarTimelineView()
                 .tabItem {
-                    Label("Timeline", systemImage: "calendar")
+                    Label("Calendar", systemImage: "calendar")
                 }
-                .tag(3)
-                
+                .tag(5)
+            
             AnalyticsDashboardView()
                 .tabItem {
                     Label("Analytics", systemImage: "chart.bar.fill")
                 }
-                .tag(4)
+                .tag(6)
         }
         .tint(AuraColors.accent)
-        // Global styling for TabBar could be applied here
     }
 }

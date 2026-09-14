@@ -3,7 +3,7 @@ import SwiftData
 
 public struct InboxView: View {
     @Query(filter: #Predicate<TaskItem> { task in
-        task.project == nil && task.statusRaw != 2 // 2 is TaskItem.Status.completed
+        task.project == nil && task.statusRaw != 2 && !task.isArchived // 2 is TaskItem.Status.completed
     }, sort: \TaskItem.createdAt, order: .reverse) 
     private var inboxTasks: [TaskItem]
     
@@ -62,9 +62,7 @@ public struct InboxView: View {
                             .transition(.opacity.combined(with: .scale(scale: 0.9)))
                         }
                     }
-                    .padding()
-                    .background(AuraColors.secondaryBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: AuraLayout.cornerRadiusMedium, style: .continuous))
+                    .glassCard()
                     .padding()
                     
                     if inboxTasks.isEmpty {

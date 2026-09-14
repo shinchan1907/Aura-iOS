@@ -9,10 +9,13 @@ public final class TaskItem {
     public var priorityRaw: Int
     public var statusRaw: Int
     public var progress: Double // 0.0 to 1.0
+    public var isArchived: Bool = false
     
     public var startDate: Date?
     public var dueDate: Date?
     public var deadline: Date?
+    public var followUpDate: Date?
+    public var isAlarmActive: Bool = false
     public var estimatedDuration: TimeInterval? // in seconds
     public var actualDuration: TimeInterval = 0
     public var reminderDates: [Date] = []
@@ -47,9 +50,12 @@ public final class TaskItem {
         priority: Priority = .medium,
         status: Status = .todo,
         progress: Double = 0.0,
+        isArchived: Bool = false,
         startDate: Date? = nil,
         dueDate: Date? = nil,
         deadline: Date? = nil,
+        followUpDate: Date? = nil,
+        isAlarmActive: Bool = false,
         estimatedDuration: TimeInterval? = nil,
         project: Project? = nil,
         parentTask: TaskItem? = nil
@@ -60,9 +66,12 @@ public final class TaskItem {
         self.priorityRaw = priority.rawValue
         self.statusRaw = status.rawValue
         self.progress = progress
+        self.isArchived = isArchived
         self.startDate = startDate
         self.dueDate = dueDate
         self.deadline = deadline
+        self.followUpDate = followUpDate
+        self.isAlarmActive = isAlarmActive
         self.estimatedDuration = estimatedDuration
         self.project = project
         self.parentTask = parentTask
@@ -74,12 +83,23 @@ public final class TaskItem {
         case low = 0
         case medium = 1
         case high = 2
+        case urgent = 3
+        
+        public var label: String {
+            switch self {
+            case .low: return "Low"
+            case .medium: return "Medium"
+            case .high: return "High"
+            case .urgent: return "Urgent"
+            }
+        }
     }
     
     public enum Status: Int, Codable, CaseIterable {
         case todo = 0
         case inProgress = 1
         case completed = 2
+        case archived = 3
     }
     
     public var priority: Priority {
@@ -106,3 +126,4 @@ public final class TaskItem {
         }
     }
 }
+

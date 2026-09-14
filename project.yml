@@ -19,7 +19,9 @@ targets:
         NSSupportsLiveActivities: true
         UIApplicationSceneManifest:
           UIApplicationSupportsMultipleScenes: false
-        NSLocationWhenInUseUsageDescription: "Aura requires location to show contextual task suggestions."
+        NSLocationWhenInUseUsageDescription: "Aura requires location to track office punch in/out attendance."
+        NSLocationAlwaysAndWhenInUseUsageDescription: "Aura uses background location to trigger automatic office punch reminders when entering or leaving office geofences."
+        NSLocationAlwaysUsageDescription: "Aura requires background location to trigger office attendance punch alerts."
     settings:
       base:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon

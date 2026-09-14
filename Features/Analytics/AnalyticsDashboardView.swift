@@ -81,14 +81,14 @@ public struct AnalyticsDashboardView: View {
                             }
                             .font(AuraTypography.caption)
                         }
-                        .auraCard()
+                        .glassCard()
                         
                         // Behavioral Insights Engine
                         VStack(alignment: .leading, spacing: AuraLayout.spacingMedium) {
                             HStack {
                                 Image(systemName: "brain.head.profile")
                                     .foregroundColor(AuraColors.projectPurple)
-                                    Text("Behavioral Insights")
+                                Text("Behavioral Insights")
                                     .font(AuraTypography.title2)
                                     .foregroundColor(AuraColors.textPrimary)
                             }
@@ -103,7 +103,7 @@ public struct AnalyticsDashboardView: View {
                                 }
                             }
                         }
-                        .auraCard()
+                        .glassCard()
                         
                     }
                     .padding(AuraLayout.screenPadding)
@@ -137,7 +137,7 @@ public struct AnalyticsDashboardView: View {
             Spacer()
         }
         .padding(AuraLayout.spacingMedium)
-        .background(AuraColors.tertiaryBackground)
+        .background(AuraColors.glassSurface)
         .clipShape(RoundedRectangle(cornerRadius: AuraLayout.cornerRadiusSmall))
     }
     
@@ -167,6 +167,6 @@ public struct AnalyticsDashboardView: View {
                 .font(AuraTypography.subheadline)
                 .foregroundColor(AuraColors.textSecondary)
         }
-        .auraCard()
+        .glassCard()
     }
 }

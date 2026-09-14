@@ -9,13 +9,12 @@ public struct TaskRowView: View {
     }
     
     public var body: some View {
-        HStack(alignment: .top, spacing: AuraLayout.spacingMedium) {
-            // Status Indicator
+        HStack(alignment: .center, spacing: AuraLayout.spacingMedium) {
+            // Status Indicator Indicator
             Circle()
                 .stroke(colorForStatus(task.status), lineWidth: 2)
                 .background(task.isCompleted ? colorForStatus(task.status) : Color.clear)
-                .frame(width: 20, height: 20)
-                .padding(.top, 2)
+                .frame(width: 22, height: 22)
             
             VStack(alignment: .leading, spacing: 4) {
                 // Title
@@ -25,16 +24,29 @@ public struct TaskRowView: View {
                     .strikethrough(task.isCompleted)
                 
                 // Metadata Row
-                HStack(spacing: AuraLayout.spacingMedium) {
+                HStack(spacing: AuraLayout.spacingSmall) {
+                    if task.priority == .urgent {
+                        Text("URGENT")
+                            .font(AuraTypography.stats)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(AuraColors.urgent.opacity(0.2))
+                            .foregroundColor(AuraColors.urgent)
+                            .clipShape(Capsule())
+                    }
+                    
                     if let project = task.project {
                         HStack(spacing: 4) {
                             Circle()
                                 .fill(Color(hex: project.colorHex) ?? AuraColors.accent)
-                                .frame(width: 8, height: 8)
+                                .frame(width: 6, height: 6)
                             Text(project.title)
                                 .font(AuraTypography.caption)
                                 .foregroundColor(AuraColors.textSecondary)
                         }
+                    } else {
+                        Text("Standalone")
+                            .font(AuraTypography.caption)
+                            .foregroundColor(AuraColors.textSecondary)
                     }
                     
                     if let dueDate = task.dueDate {
@@ -43,15 +55,19 @@ public struct TaskRowView: View {
                             Text(dueDate.formatted(date: .abbreviated, time: .shortened))
                         }
                         .font(AuraTypography.caption)
-                        .foregroundColor(AuraColors.accent)
+                        .foregroundColor(dueDate < Date() && !task.isCompleted ? AuraColors.destructive : AuraColors.accent)
+                    }
+                    
+                    if task.followUpDate != nil {
+                        Image(systemName: "bell.fill")
+                            .font(AuraTypography.caption)
+                            .foregroundColor(AuraColors.warning)
                     }
                 }
             }
             Spacer()
         }
-        .padding(AuraLayout.spacingMedium)
-        .background(AuraColors.secondaryBackground)
-        .clipShape(RoundedRectangle(cornerRadius: AuraLayout.cornerRadiusMedium, style: .continuous))
+        .glassCard(padding: 12, borderColor: task.priority == .urgent ? AuraColors.urgent.opacity(0.4) : AuraColors.glassBorder)
     }
     
     private func colorForStatus(_ status: TaskItem.Status) -> Color {
@@ -59,6 +75,7 @@ public struct TaskRowView: View {
         case .todo: return AuraColors.textSecondary
         case .inProgress: return AuraColors.warning
         case .completed: return AuraColors.success
+        case .archived: return AuraColors.projectPurple
         }
     }
 }
