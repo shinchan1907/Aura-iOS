@@ -42,31 +42,31 @@ struct ContentView: View {
             tabItem(index: 4, title: "Projects", icon: "folder.fill")
             tabItem(index: 5, title: "Insights", icon: "brain.head.profile")
         }
-        .padding(.horizontal, 10)
+        .padding(.horizontal, 4)
         .padding(.vertical, 8)
         .background(
             ZStack {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
                     .fill(.ultraThinMaterial)
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                RoundedRectangle(cornerRadius: 30, style: .continuous)
                     .fill(AuraColors.glassSurface)
             }
         )
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .stroke(
                     LinearGradient(
-                        colors: [AuraColors.glassBorder, AuraColors.glassBorder.opacity(0.2)],
+                        colors: [AuraColors.glassHighlight, AuraColors.glassBorder.opacity(0.2)],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
                     lineWidth: 1
                 )
         )
-        .shadow(color: Color.black.opacity(0.2), radius: 16, x: 0, y: 8)
-        .padding(.horizontal, AuraLayout.screenPadding)
-        .padding(.bottom, 12)
+        .shadow(color: Color.black.opacity(0.25), radius: 16, x: 0, y: 8)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 10)
     }
     
     private func tabItem(index: Int, title: String, icon: String, isPro: Bool = false) -> some View {
@@ -79,23 +79,26 @@ struct ContentView: View {
                 AuraHaptics.selection()
             }
         }) {
-            VStack(spacing: 4) {
+            VStack(spacing: 3) {
                 ZStack {
                     if isSelected {
                         Circle()
-                            .fill(color.opacity(0.2))
-                            .frame(width: 28, height: 28)
+                            .fill(color.opacity(0.18))
+                            .frame(width: 32, height: 32)
                             .transition(.scale.combined(with: .opacity))
                     }
                     
                     Image(systemName: icon)
-                        .font(.system(size: isSelected ? 18 : 16, weight: isSelected ? .bold : .medium))
+                        .font(.system(size: isSelected ? 17 : 15, weight: isSelected ? .bold : .medium))
                         .foregroundColor(isSelected ? color : AuraColors.textSecondary)
                 }
+                .frame(height: 32)
                 
                 Text(title)
-                    .font(AuraTypography.stats)
+                    .font(.system(size: 10, weight: isSelected ? .bold : .medium, design: .rounded))
                     .foregroundColor(isSelected ? color : AuraColors.textSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
             .frame(maxWidth: .infinity)
         }

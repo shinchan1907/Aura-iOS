@@ -58,6 +58,9 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         if secondsFromNow <= 10 {
             // Trigger immediately in 2 seconds for test/current reminders
             trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(2, secondsFromNow), repeats: false)
+            
+            // Automatically launch Dynamic Island activity for instant test reminders
+            FocusActivityManager.shared.startFocusActivity(taskTitle: task.title, estimatedSeconds: 1500)
         } else {
             let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
             trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
@@ -87,6 +90,7 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
         let secondsFromNow = date.timeIntervalSinceNow
         if secondsFromNow <= 10 {
             trigger = UNTimeIntervalNotificationTrigger(timeInterval: max(2, secondsFromNow), repeats: false)
+            FocusActivityManager.shared.startFocusActivity(taskTitle: task.title, estimatedSeconds: 1500)
         } else {
             let components = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute, .second], from: date)
             trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
@@ -97,20 +101,24 @@ public final class NotificationManager: NSObject, UNUserNotificationCenterDelega
     }
     
     public func removeReminders(for task: TaskItem) {
-        // Find and remove all pending notifications containing the task ID
         UNUserNotificationCenter.current().getPendingNotificationRequests { requests in
             let identifiersToRemove = requests.filter { $0.identifier.contains(task.id.uuidString) }.map { $0.identifier }
             UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: identifiersToRemove)
         }
     }
     
-    // Delegate to handle in-app notification presentation
+    // Delegate to handle in-app notification presentation & Dynamic Island spawn
     public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Automatically present Dynamic Island activity when task reminder notification fires
+        let taskTitle = notification.request.content.title
+        FocusActivityManager.shared.startFocusActivity(taskTitle: taskTitle, estimatedSeconds: 1500)
+        
         completionHandler([.banner, .sound, .badge, .list])
     }
     
     public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        let taskTitle = response.notification.request.content.title
+        FocusActivityManager.shared.startFocusActivity(taskTitle: taskTitle, estimatedSeconds: 1500)
         completionHandler()
     }
 }
-

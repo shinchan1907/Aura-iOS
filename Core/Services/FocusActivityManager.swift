@@ -6,18 +6,21 @@ public final class FocusActivityManager {
     public static let shared = FocusActivityManager()
     
     private var currentActivity: Activity<FocusAttributes>?
+    private var timer: Timer?
+    private var elapsedSeconds: Int = 0
     
     private init() {}
     
     public func startFocusActivity(taskTitle: String, estimatedSeconds: Int? = 1500) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else {
-            print("ActivityKit Live Activities are not enabled.")
+            print("ActivityKit Live Activities are not enabled on this device/settings.")
             return
         }
         
-        // End any previous session
+        // End any existing session & timer
         endFocusActivity()
         
+        self.elapsedSeconds = 0
         let attributes = FocusAttributes(taskTitle: taskTitle)
         let initialState = FocusAttributes.ContentState(
             sessionState: .active,
@@ -32,9 +35,19 @@ public final class FocusActivityManager {
                 pushType: nil
             )
             self.currentActivity = activity
-            print("Successfully requested Live Activity / Dynamic Island: \(activity.id)")
+            print("Successfully started Dynamic Island Live Activity: \(activity.id)")
+            
+            // Start real-time ticking timer for Dynamic Island updates
+            DispatchQueue.main.async {
+                self.timer?.invalidate()
+                self.timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+                    guard let self = self else { return }
+                    self.elapsedSeconds += 1
+                    self.updateFocusActivity(elapsedSeconds: self.elapsedSeconds)
+                }
+            }
         } catch {
-            print("Error requesting Live Activity: \(error.localizedDescription)")
+            print("Error requesting ActivityKit Live Activity: \(error.localizedDescription)")
         }
     }
     
@@ -52,6 +65,11 @@ public final class FocusActivityManager {
     }
     
     public func endFocusActivity() {
+        DispatchQueue.main.async {
+            self.timer?.invalidate()
+            self.timer = nil
+        }
+        
         guard let activity = currentActivity else { return }
         
         var updatedState = activity.content.state
