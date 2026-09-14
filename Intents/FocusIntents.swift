@@ -12,7 +12,8 @@ public struct PauseFocusIntent: LiveActivityIntent {
             for activity in Activity<FocusAttributes>.activities {
                 var contentState = activity.content.state
                 contentState.sessionState = .paused
-                await activity.update(ActivityContent(state: contentState, staleDate: nil))
+                let targetState = contentState
+                await activity.update(ActivityContent(state: targetState, staleDate: nil))
             }
         }
         return .result()
@@ -29,7 +30,8 @@ public struct ResumeFocusIntent: LiveActivityIntent {
             for activity in Activity<FocusAttributes>.activities {
                 var contentState = activity.content.state
                 contentState.sessionState = .active
-                await activity.update(ActivityContent(state: contentState, staleDate: nil))
+                let targetState = contentState
+                await activity.update(ActivityContent(state: targetState, staleDate: nil))
             }
         }
         return .result()
@@ -60,7 +62,8 @@ public struct CompleteFocusIntent: LiveActivityIntent {
             for activity in Activity<FocusAttributes>.activities {
                 var contentState = activity.content.state
                 contentState.sessionState = .completed
-                await activity.end(ActivityContent(state: contentState, staleDate: nil), dismissalPolicy: .immediate)
+                let targetState = contentState
+                await activity.end(ActivityContent(state: targetState, staleDate: nil), dismissalPolicy: .immediate)
             }
         }
         return .result()

@@ -20,9 +20,9 @@ public final class FocusActivityManager {
         
         let attributes = FocusAttributes(taskTitle: taskTitle)
         let initialState = FocusAttributes.ContentState(
+            sessionState: .active,
             elapsedSeconds: 0,
-            totalEstimatedSeconds: estimatedSeconds,
-            sessionState: .active
+            totalEstimatedSeconds: estimatedSeconds
         )
         
         do {
@@ -41,23 +41,25 @@ public final class FocusActivityManager {
     public func updateFocusActivity(elapsedSeconds: Int, state: FocusAttributes.SessionState = .active) {
         guard let activity = currentActivity else { return }
         
-        var contentState = activity.content.state
-        contentState.elapsedSeconds = elapsedSeconds
-        contentState.sessionState = state
+        var updatedState = activity.content.state
+        updatedState.elapsedSeconds = elapsedSeconds
+        updatedState.sessionState = state
+        let targetState = updatedState
         
         Task {
-            await activity.update(ActivityContent(state: contentState, staleDate: nil))
+            await activity.update(ActivityContent(state: targetState, staleDate: nil))
         }
     }
     
     public func endFocusActivity() {
         guard let activity = currentActivity else { return }
         
-        var finalState = activity.content.state
-        finalState.sessionState = .completed
+        var updatedState = activity.content.state
+        updatedState.sessionState = .completed
+        let targetFinalState = updatedState
         
         Task {
-            await activity.end(ActivityContent(state: finalState, staleDate: nil), dismissalPolicy: .immediate)
+            await activity.end(ActivityContent(state: targetFinalState, staleDate: nil), dismissalPolicy: .immediate)
         }
         self.currentActivity = nil
     }
